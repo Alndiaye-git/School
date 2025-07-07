@@ -200,41 +200,6 @@ const Dashboard: React.FC = () => {
         
         <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''} ${isTablet ? 'tablet' : ''} ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          {/* Infos utilisateur et déconnexion en haut */}
-          <div className="sidebar-user-section">
-            {(!sidebarCollapsed || isMobile) ? (
-              <div className="user-info-top">
-                <div className="user-profile">
-                  <div className="user-avatar">{userData.nom.charAt(0).toUpperCase()}</div>
-                  <div className="user-details">
-                    <span className="user-name">{userData.nom}</span>
-                    <span className="user-role">{userData.role}</span>
-                  </div>
-                </div>
-                <button onClick={logout} className="logout-btn" title="Déconnexion">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                  </svg>
-                  <span>Déconnexion</span>
-                </button>
-              </div>
-            ) : (
-              <div className="user-info-collapsed">
-                <div className="user-avatar-small">{userData.nom.charAt(0).toUpperCase()}</div>
-                <button onClick={logout} className="logout-btn-icon" title="Déconnexion">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Année scolaire */}
           {(!sidebarCollapsed || isMobile) ? (
             <div className="sidebar-year-info">
               {anneeScolaireActive ? (
@@ -387,6 +352,43 @@ const Dashboard: React.FC = () => {
                   </svg>
                   {(!sidebarCollapsed || isMobile) && <span>Export</span>}
                 </button>
+              </div>
+              
+              {/* Section Utilisateur et Déconnexion */}
+              <div className="nav-section user-section">
+                {(!sidebarCollapsed || isMobile) && <h3>👤 Mon Compte</h3>}
+                <div className="user-info-nav">
+                  {(!sidebarCollapsed || isMobile) ? (
+                    <>
+                      <div className="user-profile-nav">
+                        <div className="user-avatar">{userData.nom.charAt(0).toUpperCase()}</div>
+                        <div className="user-details">
+                          <span className="user-name">{userData.nom}</span>
+                          <span className="user-role">{userData.role}</span>
+                        </div>
+                      </div>
+                      <button onClick={logout} className="logout-btn" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Déconnexion</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="user-info-collapsed">
+                      <div className="user-avatar-small">{userData.nom.charAt(0).toUpperCase()}</div>
+                      <button onClick={logout} className="logout-btn-icon" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
