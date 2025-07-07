@@ -1,25 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import ForcePasswordChange from './components/ForcePasswordChange';
+import { appConfig } from './config/appConfig';
 import './App.css';
 
+const AppContent: React.FC = () => {
+  const { currentUser, userData, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading">Chargement...</div>;
+  }
+
+  if (!currentUser) {
+    return <Login />;
+  }
+
+  // Si l'utilisateur doit changer son mot de passe
+  if (userData?.forcePasswordChange) {
+    return <ForcePasswordChange />;
+  }
+
+  return <Dashboard />;
+};
+
 function App() {
+  // Mettre à jour le titre de la page avec la configuration
+  useEffect(() => {
+    document.title = `${appConfig.appTitle} - ${appConfig.schoolName}`;
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <AppContent />
+      </div>
+    </AuthProvider>
   );
 }
 
