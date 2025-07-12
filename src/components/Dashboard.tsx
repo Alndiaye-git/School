@@ -251,18 +251,57 @@ const Dashboard: React.FC = () => {
           </button>
 
           {userData.role === 'enseignant' && (
-            <button 
-              className={activeView === 'mes-eleves' ? 'active' : ''}
-              onClick={() => handleViewChange('mes-eleves')}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              {(!sidebarCollapsed || isMobile) && <span>Mes Élèves</span>}
-            </button>
+            <>
+              <button 
+                className={activeView === 'mes-eleves' ? 'active' : ''}
+                onClick={() => handleViewChange('mes-eleves')}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                {(!sidebarCollapsed || isMobile) && <span>Mes Élèves</span>}
+              </button>
+              
+              {/* Section Utilisateur et Déconnexion pour Enseignant */}
+              <div className="nav-section user-section">
+                {(!sidebarCollapsed || isMobile) && <h3>👤 Mon Compte</h3>}
+                <div className="user-info-nav">
+                  {(!sidebarCollapsed || isMobile) ? (
+                    <>
+                      <div className="user-profile-nav">
+                        <div className="user-avatar">{userData.nom.charAt(0).toUpperCase()}</div>
+                        <div className="user-details">
+                          <span className="user-name">{userData.nom}</span>
+                          <span className="user-role">{userData.role}</span>
+                        </div>
+                      </div>
+                      <button onClick={logout} className="logout-btn" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Déconnexion</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="user-info-collapsed">
+                      <div className="user-avatar-small">{userData.nom.charAt(0).toUpperCase()}</div>
+                      <button onClick={logout} className="logout-btn-icon" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           {userData.role === 'directeur' && (
@@ -394,19 +433,58 @@ const Dashboard: React.FC = () => {
           )}
 
           {userData.role === 'super_admin' && (
-            <div className="nav-section super-admin-section">
-              {(!sidebarCollapsed || isMobile) && <h3>🔧 Super Administration</h3>}
-              <button 
-                className={activeView === 'super-admin' ? 'active' : ''}
-                onClick={() => handleViewChange('super-admin')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"></path>
-                  <path d="M9 12l2 2 4-4"></path>
-                </svg>
-                {(!sidebarCollapsed || isMobile) && <span>Gestion Base de Données</span>}
-              </button>
-            </div>
+            <>
+              <div className="nav-section super-admin-section">
+                {(!sidebarCollapsed || isMobile) && <h3>🔧 Super Administration</h3>}
+                <button 
+                  className={activeView === 'super-admin' ? 'active' : ''}
+                  onClick={() => handleViewChange('super-admin')}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                  </svg>
+                  {(!sidebarCollapsed || isMobile) && <span>Gestion Base de Données</span>}
+                </button>
+              </div>
+              
+              {/* Section Utilisateur et Déconnexion pour Super Admin */}
+              <div className="nav-section user-section">
+                {(!sidebarCollapsed || isMobile) && <h3>👤 Mon Compte</h3>}
+                <div className="user-info-nav">
+                  {(!sidebarCollapsed || isMobile) ? (
+                    <>
+                      <div className="user-profile-nav">
+                        <div className="user-avatar">{userData.nom.charAt(0).toUpperCase()}</div>
+                        <div className="user-details">
+                          <span className="user-name">{userData.nom}</span>
+                          <span className="user-role">{userData.role}</span>
+                        </div>
+                      </div>
+                      <button onClick={logout} className="logout-btn" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Déconnexion</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="user-info-collapsed">
+                      <div className="user-avatar-small">{userData.nom.charAt(0).toUpperCase()}</div>
+                      <button onClick={logout} className="logout-btn-icon" title="Déconnexion">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                          <polyline points="16 17 21 12 16 7"></polyline>
+                          <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </nav>
       </aside>

@@ -40,7 +40,7 @@ export const createEnseignant = async (nom: string, email: string, password: str
       forcePasswordChange: true,
       active: true,
       deleted_at: null
-      // deleted_by n'est pas défini pour les nouveaux utilisateurs
+      // deleted_by pas défini pr les nouveaux utilisateurs
     };
     
     await setDoc(doc(db, 'users', uid), userData);

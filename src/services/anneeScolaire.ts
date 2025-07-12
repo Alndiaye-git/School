@@ -137,7 +137,7 @@ export class AnneeScolaireService {
         throw new Error('Aucune année scolaire trouvée');
       }
 
-      // Gestion des deux formats de noms de champs (legacy et nouveau)
+      // New format de nom et legacy
       const dateDebutStr = (anneeScolaire as any).dateDebut || (anneeScolaire as any).date_debut;
       const dateFinStr = (anneeScolaire as any).dateFin || (anneeScolaire as any).date_fin;
       
@@ -284,7 +284,7 @@ export class AnneeScolaireService {
   }
 
   /**
-   * Créer les périodes par défaut pour une année scolaire française
+   * Créer les périodes par défaut pour une année scolaire
    */
   private async creerPeriodesParDefaut(anneeScolaireId: string, dateDebut: string, dateFin: string): Promise<void> {
     // Ne pas créer de périodes par défaut - laisser vide
