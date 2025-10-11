@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 import { User } from '../types';
@@ -57,3 +57,12 @@ export const createEnseignant = async (nom: string, email: string, password: str
     throw error;
   }
 };
+
+export const resetPassword = async (email: string): Promise<void> => {
+  await sendPasswordResetEmail(auth, email), {
+    url: window.location.origin,
+    handleCodeInApp: false
+  }
+
+  // TODO: error management
+}
