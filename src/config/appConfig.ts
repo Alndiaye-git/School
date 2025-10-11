@@ -1,7 +1,7 @@
 // Configuration de l'application
 export const appConfig = {
   // Nom de l'école - peut être modifié via la variable d'environnement REACT_APP_SCHOOL_NAME
-  schoolName: process.env.REACT_APP_SCHOOL_NAME || 'École Primaire Les Petits Savants',
+  schoolName: process.env.REACT_APP_SCHOOL_NAME || 'École Primaire Samuel Wallis',
   
   // Titre de l'application - peut être modifié via la variable d'environnement REACT_APP_APP_TITLE
   appTitle: process.env.REACT_APP_APP_TITLE || 'Gestion des Absences',

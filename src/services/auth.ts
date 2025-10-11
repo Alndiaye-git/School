@@ -17,12 +17,12 @@ export const createEnseignant = async (nom: string, email: string, password: str
     
     // Configuration Firebase (réutilise la même config)
     const secondaryApp = initializeApp({
-      apiKey: "AIzaSyBoTBPtNDRzTaXh8GwwsF7UBkN99jnT3dA",
-      authDomain: "school-absence-da786.firebaseapp.com",
-      projectId: "school-absence-da786",
-      storageBucket: "school-absence-da786.firebasestorage.app",
-      messagingSenderId: "906587307534",
-      appId: "1:906587307534:web:b0e9be0b69a2bbfdbed2d7"
+      apiKey: "AIzaSyBAy6F9fr3KTQ0PVnez8iHC03Rh-tp3dSA",
+      authDomain: "samuel-wallis.firebaseapp.com",
+      projectId: "samuel-wallis",
+      storageBucket: "samuel-wallis.firebasestorage.app",
+      messagingSenderId: "668308725434",
+      appId: "1:668308725434:web:1d883b3676fae143fd2c83"
     }, 'SecondaryApp');
     
     const secondaryAuth = getAuth(secondaryApp);

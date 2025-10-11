@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBoTBPtNDRzTaXh8GwwsF7UBkN99jnT3dA",
-  authDomain: "school-absence-da786.firebaseapp.com",
-  projectId: "school-absence-da786",
-  storageBucket: "school-absence-da786.firebasestorage.app",
-  messagingSenderId: "846152854659",
-  appId: "1:846152854659:web:2916989dbab72895cabfb6",
-  measurementId: "G-27B4VJ3PVW"
+  apiKey: "AIzaSyBAy6F9fr3KTQ0PVnez8iHC03Rh-tp3dSA",
+  authDomain: "samuel-wallis.firebaseapp.com",
+  projectId: "samuel-wallis",
+  storageBucket: "samuel-wallis.firebasestorage.app",
+  messagingSenderId: "668308725434",
+  appId: "1:668308725434:web:1d883b3676fae143fd2c83"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -217,7 +217,7 @@ const GestionClasses: React.FC = () => {
                 label: 'Nom de la classe',
                 type: 'text',
                 required: true,
-                placeholder: 'Ex: CE1 A, CM2 B',
+                placeholder: 'Ex: PS1, PS2, PS3, GS1, GS2, GS3',
                 width: 'half'
               },
               {
@@ -226,11 +226,11 @@ const GestionClasses: React.FC = () => {
                 type: 'select',
                 options: [
                   { value: '', label: 'Sélectionner un niveau' },
-                  { value: 'CP', label: 'CP' },
-                  { value: 'CE1', label: 'CE1' },
-                  { value: 'CE2', label: 'CE2' },
-                  { value: 'CM1', label: 'CM1' },
-                  { value: 'CM2', label: 'CM2' }
+                  { value: 'PS1', label: 'PS1' },
+                  { value: 'PS2', label: 'PS2' },
+                  { value: 'PS3', label: 'PS3' },
+                  { value: 'GS1', label: 'GS1' },
+                  { value: 'GS2', label: 'GS2' }
                 ],
                 width: 'half'
               },
