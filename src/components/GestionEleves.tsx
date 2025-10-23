@@ -47,7 +47,11 @@ const GestionEleves: React.FC = () => {
       
       // Charger les classes de l'année scolaire active
       const classesData = await getActiveClassesByAnneeScolaire(anneeScolaireActive.id);
-      setClasses(classesData);
+      // Tri naturel des classes par nom (comprend les nombres)
+      const classesSorted = classesData.sort((a, b) =>
+        a.nom.localeCompare(b.nom, 'fr', { numeric: true, sensitivity: 'base' })
+      );
+      setClasses(classesSorted);
       
       // Charger les élèves et filtrer par les classes de l'année active
       const elevesData = await getActiveEleves();

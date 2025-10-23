@@ -61,12 +61,20 @@ const SaisieAbsences: React.FC = () => {
       
       if (userData?.role === 'directeur') {
         const classesData = await getActiveClassesByAnneeScolaire(anneeActive.id);
-        setClasses(classesData);
+        // Tri naturel des classes par nom (comprend les nombres)
+        const classesSorted = classesData.sort((a, b) =>
+          a.nom.localeCompare(b.nom, 'fr', { numeric: true, sensitivity: 'base' })
+        );
+        setClasses(classesSorted);
       } else if (userData?.id) {
         // Pour les enseignants, filtrer leurs classes par année scolaire
         const allClassesEnseignant = await getActiveClassesByEnseignant(userData.id);
         const classesData = allClassesEnseignant.filter(c => c.annee_scolaire_id === anneeActive.id);
-        setClasses(classesData);
+        // Tri naturel des classes par nom (comprend les nombres)
+        const classesSorted = classesData.sort((a, b) =>
+          a.nom.localeCompare(b.nom, 'fr', { numeric: true, sensitivity: 'base' })
+        );
+        setClasses(classesSorted);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des classes:', error);

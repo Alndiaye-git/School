@@ -36,7 +36,11 @@ const ElevesEnseignant: React.FC = () => {
       // Récupérer toutes les classes de l'année active puis filtrer par enseignant
       const toutesLesClasses = await getActiveClassesByAnneeScolaire(anneeScolaireActive.id);
       const classesEnseignant = toutesLesClasses.filter(classe => classe.enseignant_id === userData.id);
-      setMesClasses(classesEnseignant);
+      // Tri naturel des classes par nom (comprend les nombres)
+      const classesSorted = classesEnseignant.sort((a, b) =>
+        a.nom.localeCompare(b.nom, 'fr', { numeric: true, sensitivity: 'base' })
+      );
+      setMesClasses(classesSorted);
 
       // Récupérer tous les élèves des classes de l'enseignant
       const elevesData = await getActiveEleves();
