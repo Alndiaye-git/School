@@ -315,9 +315,7 @@ const SaisieAbsences: React.FC = () => {
               className="classe-select"
             >
               <option value="">Choisir une classe</option>
-              // TODO sort by first number
-              // Get first number from {classe.nom}
-              // then filter
+              
               {classes.map(classe => (
                 <option key={classe.id} value={classe.id}>
                   {classe.nom} {classe.niveau ? `- ${classe.niveau}` : ''}

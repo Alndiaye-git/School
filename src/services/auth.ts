@@ -59,10 +59,8 @@ export const createEnseignant = async (nom: string, email: string, password: str
 };
 
 export const resetPassword = async (email: string): Promise<void> => {
-  await sendPasswordResetEmail(auth, email), {
+  await sendPasswordResetEmail(auth, email, {
     url: window.location.origin,
     handleCodeInApp: false
-  }
-
-  // TODO: error management
+  });
 }

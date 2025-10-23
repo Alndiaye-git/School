@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ForcePasswordChange from './components/ForcePasswordChange';
+import ResetPassword from './components/ResetPassword';
 import { appConfig } from './config/appConfig';
 import './App.css';
 
-const AppContent: React.FC = () => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser, userData, loading } = useAuth();
 
   if (loading) {
@@ -14,7 +16,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!currentUser) {
-    return <Login />;
+    return <Navigate to="/login" replace />;
   }
 
   // Si l'utilisateur doit changer son mot de passe
@@ -22,7 +24,30 @@ const AppContent: React.FC = () => {
     return <ForcePasswordChange />;
   }
 
-  return <Dashboard />;
+  return <>{children}</>;
+};
+
+const AppContent: React.FC = () => {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading">Chargement...</div>;
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
 };
 
 function App() {
@@ -32,11 +57,13 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <div className="App">
-        <AppContent />
-      </div>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="App">
+          <AppContent />
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
