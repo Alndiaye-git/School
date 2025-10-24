@@ -34,9 +34,8 @@ const GestionEleves: React.FC = () => {
     try {
       // Récupérer l'année scolaire active
       const anneeScolaireActive = await anneeScolaireService.getAnneeScolaireActive();
-      
+
       if (!anneeScolaireActive) {
-        console.warn('Aucune année scolaire active');
         setClasses([]);
         setEleves([]);
         return;

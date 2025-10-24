@@ -130,21 +130,13 @@ export class StatisticsService {
    */
   async getClasseStatistics(anneeScolaireId?: string): Promise<ClasseStats[]> {
     try {
-      console.log('🏫 === CALCUL STATS PAR CLASSE ===');
-      
       const [classes, eleves, absences] = await Promise.all([
         getActiveClassesByAnneeScolaire(anneeScolaireId),
         getActiveElevesByAnneeScolaire(anneeScolaireId),
         this.getAllAbsences(anneeScolaireId)
       ]);
 
-      console.log('📊 Données chargées:');
-      console.log('  - Classes actives:', classes.length);
-      console.log('  - Élèves actifs:', eleves.length);
-      console.log('  - Absences totales:', absences.length);
-
       const joursEcole = await this.getJoursEcoleAnnee(anneeScolaireId);
-      console.log('📅 Jours d\'école dans l\'année:', joursEcole);
 
       const stats: ClasseStats[] = [];
 
@@ -161,12 +153,6 @@ export class StatisticsService {
         const totalDemiJourneesClasse = totalEleves * joursEcole * 2; // Multiplier par 2 pour les demi-journées
         const tauxAbsenteisme = totalDemiJourneesClasse > 0 ? (totalAbsences / totalDemiJourneesClasse) * 100 : 0;
 
-        console.log(`📝 Classe ${classe.nom}:`);
-        console.log(`  - Élèves: ${totalEleves}`);
-        console.log(`  - Absences (demi-journées): ${totalAbsences}`);
-        console.log(`  - Total demi-journées possibles (${totalEleves} × ${joursEcole} × 2): ${totalDemiJourneesClasse}`);
-        console.log(`  - Taux d'absentéisme: ${tauxAbsenteisme}%`);
-
         // Calculer l'évolution mensuelle
         const evolution = await this.calculateClasseEvolution(absencesClasse, elevesClasse, anneeScolaireId);
 
@@ -181,7 +167,6 @@ export class StatisticsService {
 
       // Trier par taux d'absentéisme décroissant
       const sortedStats = stats.sort((a, b) => b.tauxAbsenteisme - a.tauxAbsenteisme);
-      console.log('🏫 === FIN CALCUL STATS PAR CLASSE ===');
       return sortedStats;
     } catch (error) {
       console.error('Erreur lors du calcul des statistiques par classe:', error);
@@ -219,21 +204,13 @@ export class StatisticsService {
    */
   async getIndividualStatistics(anneeScolaireId?: string): Promise<IndividualStats> {
     try {
-      console.log('👤 === CALCUL STATS INDIVIDUELLES ===');
-      
       const [classes, eleves, absences] = await Promise.all([
         getActiveClassesByAnneeScolaire(anneeScolaireId),
         getActiveElevesByAnneeScolaire(anneeScolaireId),
         this.getAllAbsences(anneeScolaireId)
       ]);
 
-      console.log('📊 Données individuelles:');
-      console.log('  - Classes:', classes.length);
-      console.log('  - Élèves:', eleves.length);
-      console.log('  - Absences:', absences.length);
-
       const joursEcole = await this.getJoursEcoleAnnee(anneeScolaireId);
-      console.log('📅 Jours d\'école pour calcul individuel:', joursEcole);
 
       const elevesWithStats: EleveWithStats[] = [];
 
@@ -248,13 +225,6 @@ export class StatisticsService {
         const derniereAbsence = absencesEleve.length > 0
           ? absencesEleve.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date
           : undefined;
-
-        if (totalAbsences > 0) {
-          console.log(`📝 Élève ${eleve.prenom} ${eleve.nom}:`);
-          console.log(`  - Absences (demi-journées): ${totalAbsences}`);
-          console.log(`  - Demi-journées d'école: ${totalDemiJourneesEleve}`);
-          console.log(`  - Taux: ${tauxAbsenteisme}%`);
-        }
 
         elevesWithStats.push({
           eleve,
@@ -275,14 +245,9 @@ export class StatisticsService {
         .filter(e => e.tauxAbsenteisme > 10)
         .sort((a, b) => b.tauxAbsenteisme - a.tauxAbsenteisme);
 
-      console.log('🎯 Résultats individuels:');
-      console.log('  - Élèves à suivre (>10%):', elevesSuivi.length);
-      console.log('  - Top assidus:', topAssidus.length);
-
       // Générer les alertes
       const alertes = await this.generateAlerts(elevesWithStats, absences);
 
-      console.log('👤 === FIN CALCUL STATS INDIVIDUELLES ===');
       return {
         topAssidus,
         elevesSuivi,
@@ -384,28 +349,16 @@ export class StatisticsService {
     const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     const stats: DayOfWeekStats[] = [];
 
-    console.log('📅 === CALCUL STATS PAR JOUR DE SEMAINE ===');
-    console.log('📊 Données d\'entrée:');
-    console.log('  - Nombre d\'élèves:', eleves.length);
-    console.log('  - Nombre total d\'absences:', absences.length);
-    console.log('  - Année scolaire ID:', anneeScolaireId);
-
     // Récupérer l'année scolaire pour avoir les vraies dates
     const anneeScolaire = await anneeScolaireService.getAnneeScolaireActive();
     if (!anneeScolaire) {
-      console.log('❌ Pas d\'année scolaire active trouvée');
       return stats;
     }
-
-    console.log('🗓️ Année scolaire active:', anneeScolaire.nom);
-    console.log('📅 Période:', anneeScolaire.dateDebut, 'au', anneeScolaire.dateFin);
 
     // Calculer le nombre réel de chaque jour de la semaine dans l'année
     const joursParType: { [key: number]: number } = {};
     const dateDebut = new Date(anneeScolaire.dateDebut);
     const dateFin = new Date(anneeScolaire.dateFin);
-    
-    console.log('🔢 Comptage des jours de cours par type:');
     
     // Compter les jours de cours par type
     for (let d = new Date(dateDebut); d <= dateFin; d.setDate(d.getDate() + 1)) {
@@ -419,10 +372,6 @@ export class StatisticsService {
       }
     }
 
-    Object.keys(joursParType).forEach(dayNum => {
-      console.log(`  - ${jours[parseInt(dayNum)]}: ${joursParType[parseInt(dayNum)]} jours de cours`);
-    });
-
     // Calculer les stats pour chaque jour
     for (let dayNum = 1; dayNum <= 5; dayNum++) { // Lundi à Vendredi
       const absencesJour = absences.filter(a => {
@@ -435,13 +384,6 @@ export class StatisticsService {
       const presents = totalDemiJourneesPossible - absencesJour.length;
       const tauxAbsenteisme = totalDemiJourneesPossible > 0 ? (absencesJour.length / totalDemiJourneesPossible) * 100 : 0;
 
-      console.log(`📊 ${jours[dayNum]}:`);
-      console.log(`  - Absences (demi-journées) ce jour: ${absencesJour.length}`);
-      console.log(`  - Jours de ce type dans l'année: ${nombreJoursDeCeType}`);
-      console.log(`  - Total demi-journées possible (${eleves.length} élèves × ${nombreJoursDeCeType} jours × 2): ${totalDemiJourneesPossible}`);
-      console.log(`  - Présents: ${presents}`);
-      console.log(`  - Taux d'absentéisme: ${tauxAbsenteisme}%`);
-
       stats.push({
         jour: jours[dayNum],
         jourNum: dayNum,
@@ -451,35 +393,25 @@ export class StatisticsService {
       });
     }
 
-    console.log('📅 === FIN CALCUL STATS PAR JOUR DE SEMAINE ===');
     return stats;
   }
 
   private async calculatePeakAbsences(absences: AbsenceEleve[], eleves: Eleve[]): Promise<PeakAbsence[]> {
-    console.log('🚨 === CALCUL PICS D\'ABSENCES ===');
-    console.log('📊 Données:');
-    console.log('  - Total élèves:', eleves.length);
-    console.log('  - Total absences:', absences.length);
-    
     // Grouper les absences par date
     const absencesParDate: { [date: string]: number } = {};
-    
+
     absences.forEach(absence => {
       absencesParDate[absence.date] = (absencesParDate[absence.date] || 0) + 1;
     });
 
-    console.log('📅 Absences par date:', absencesParDate);
-
     // Trouver les pics (plus de 20% de demi-journées d'absence sur une journée)
     const totalDemiJourneesParJour = eleves.length * 2; // 2 demi-journées par jour
     const seuil = Math.max(1, Math.floor(totalDemiJourneesParJour * 0.2));
-    console.log('🎯 Seuil pour pic (20% des demi-journées):', seuil);
 
     const pics: PeakAbsence[] = Object.entries(absencesParDate)
       .filter(([date, count]) => count >= seuil)
       .map(([date, count]) => {
         const tauxAbsenteisme = totalDemiJourneesParJour > 0 ? (count / totalDemiJourneesParJour) * 100 : 0;
-        console.log(`📊 ${date}: ${count} demi-journées d'absence / ${totalDemiJourneesParJour} demi-journées possibles = ${tauxAbsenteisme}%`);
 
         return {
           date,
@@ -491,8 +423,6 @@ export class StatisticsService {
       .sort((a, b) => b.absences - a.absences)
       .slice(0, 10); // Top 10 des pics
 
-    console.log('🚨 Pics détectés:', pics.length);
-    console.log('🚨 === FIN CALCUL PICS D\'ABSENCES ===');
     return pics;
   }
 

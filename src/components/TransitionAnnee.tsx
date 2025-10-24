@@ -112,10 +112,6 @@ const TransitionAnnee: React.FC<TransitionAnneeProps> = ({ onClose, onComplete }
         ].join('\n');
         
         setError(messageDetaille);
-        
-        // Afficher aussi dans la console pour debugging
-        console.log('Détails de vérification:', verification.details);
-        console.log('Raisons du blocage:', verification.raisons);
       }
     } catch (error) {
       console.error('Erreur lors de la vérification:', error);

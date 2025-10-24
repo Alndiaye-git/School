@@ -387,9 +387,7 @@ export class TransitionAnneeService {
       }
       
       raisons.push(`📊 ${nombreAbsences} absence(s) trouvée(s)`);
-      
-      console.log(`Diagnostic transition - Classes: ${nombreClasses}, Élèves: ${nombreEleves}, Absences: ${nombreAbsences}`);
-      
+
     } catch (error) {
       console.error('Erreur lors de la vérification des données:', error);
       raisons.push('❌ Erreur technique lors de la vérification des données');
@@ -455,52 +453,37 @@ export class TransitionAnneeService {
 
     try {
       // 1. Générer le rapport de fin d'année
-      console.log('Génération du rapport de fin d\'année...');
       const rapport = await RapportFinAnneeService.genererRapportFinAnnee(anneePrecedente);
-      
+
       // Télécharger automatiquement le fichier Excel
       const nomExcel = RapportFinAnneeService.genererNomFichier(anneePrecedente, 'xlsx');
       RapportFinAnneeService.telechargerFichier(rapport.rapportExcel, nomExcel);
-      
+
       result.rapportGenere = true;
-      console.log('Rapport généré et téléchargé avec succès');
 
       // 2. Verrouiller l'année précédente
-      console.log('Verrouillage de l\'année précédente...');
       await this.verrouillerAnneePrecedente(anneePrecedente, utilisateurId);
       result.anneePrecedenteVerrouillee = true;
-      console.log('Année précédente verrouillée');
 
       // 3. Créer la nouvelle année scolaire
-      console.log('Création de la nouvelle année scolaire...');
       const nouvelleAnneeDoc = await this.creerNouvelleAnnee(nouvelleAnnee, utilisateurId);
       result.nouvelleAnneeCreee = true;
-      console.log('Nouvelle année créée');
 
       // 4. Transférer les classes
-      console.log('Transfert des classes...');
       const classesTransferees = await this.transfererClasses(anneePrecedente.id, nouvelleAnneeDoc.id);
       result.classesTransferees = classesTransferees;
-      console.log(`${classesTransferees} classes transférées`);
 
       // 5. Transférer les élèves
-      console.log('Transfert des élèves...');
       const elevesTransferes = await this.transfererEleves(anneePrecedente.id, nouvelleAnneeDoc.id);
       result.elevesTransferes = elevesTransferes;
-      console.log(`${elevesTransferes} élèves transférés`);
 
       // 6. Supprimer les absences de l'année précédente
-      console.log('Suppression des absences de l\'année précédente...');
       const absencesSupprimees = await this.supprimerAbsencesAnneePrecedente(anneePrecedente.id);
       result.absencesSupprimees = absencesSupprimees;
-      console.log(`${absencesSupprimees} absences supprimées`);
 
       // 7. Supprimer l'ancienne année scolaire
-      console.log('Suppression de l\'ancienne année scolaire...');
       await this.supprimerAnneePrecedente(anneePrecedente.id);
-      console.log('Ancienne année scolaire supprimée');
 
-      console.log('Transition terminée avec succès');
       return result;
 
     } catch (error) {
@@ -589,23 +572,20 @@ export class TransitionAnneeService {
     
     for (const docSnapshot of classesSnapshot.docs) {
       const classeData = docSnapshot.data() as Classe;
-      
+
       // Supprimer les classes CM2 (élèves sortants)
       if (classeData.niveau === 'CM2') {
-        console.log(`Classe ${classeData.nom} (CM2) supprimée - élèves sortants`);
         batch.delete(docSnapshot.ref);
         continue;
       }
-      
+
       // Calculer le nouveau niveau
       const niveauActuel = classeData.niveau || '';
       const nouveauNiveau = progressionNiveaux[niveauActuel] || niveauActuel;
-      
+
       // Générer le nouveau nom de classe
       const nouveauNom = this.genererNouveauNomClasse(classeData.nom, niveauActuel, nouveauNiveau);
-      
-      console.log(`Classe mise à jour: ${classeData.nom} (${niveauActuel}) → ${nouveauNom} (${nouveauNiveau})`);
-      
+
       // Mettre à jour la classe existante
       batch.update(docSnapshot.ref, {
         nom: nouveauNom,
@@ -694,33 +674,29 @@ export class TransitionAnneeService {
       // Récupérer la classe actuelle de l'élève pour connaître son niveau
       const classeActuelleRef = doc(db, 'classes', eleveData.classe_id);
       const classeActuelleDoc = await getDoc(classeActuelleRef);
-      
+
       if (!classeActuelleDoc.exists()) {
-        console.log(`Classe introuvable pour l'élève ${eleveData.prenom} ${eleveData.nom}`);
         continue;
       }
-      
+
       const ancienneClasse = classeActuelleDoc.data() as Classe;
       const niveauActuel = ancienneClasse.niveau || '';
       const nouveauNiveau = progressionNiveaux[niveauActuel];
 
       // Supprimer les élèves de CM2 (sortants)
       if (niveauActuel === 'CM2') {
-        console.log(`Élève ${eleveData.prenom} ${eleveData.nom} (CM2) - Sortant, supprimé`);
         batch.delete(docSnapshot.ref);
         continue;
       }
 
       if (!nouveauNiveau) {
-        console.log(`Pas de progression définie pour le niveau ${niveauActuel} - élève ${eleveData.prenom} ${eleveData.nom}`);
         continue;
       }
 
       // Trouver une classe correspondante dans le nouveau niveau
       const classesDisponibles = nouvellesClassesParNiveau.get(nouveauNiveau) || [];
-      
+
       if (classesDisponibles.length === 0) {
-        console.log(`Aucune classe ${nouveauNiveau} disponible pour l'élève ${eleveData.prenom} ${eleveData.nom}`);
         continue;
       }
 
@@ -735,9 +711,7 @@ export class TransitionAnneeService {
       if (!nouvelleClasse) {
         nouvelleClasse = classesDisponibles[0];
       }
-      
-      console.log(`Élève mis à jour: ${eleveData.prenom} ${eleveData.nom} (${ancienneClasse.nom}/${niveauActuel}) → (${nouvelleClasse.nom}/${nouveauNiveau})`);
-      
+
       // Mettre à jour l'élève existant
       batch.update(docSnapshot.ref, {
         annee_scolaire_id: nouvelleAnneeId,

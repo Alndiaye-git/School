@@ -40,8 +40,6 @@ export class ExportAbsencesService {
    */
   async genererDonneesExport(anneeScolaireId: string): Promise<RapportAnnuelData> {
     try {
-      console.log('📊 Génération du rapport d\'absences pour l\'année:', anneeScolaireId);
-
       // Récupérer l'année scolaire
       const anneeScolaireQuery = query(
         collection(db, 'annees_scolaires'),

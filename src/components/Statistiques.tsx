@@ -66,25 +66,11 @@ const Statistiques: React.FC = () => {
 
       const anneeScolaireId = selectedAnneeScolaire === 'all' ? undefined : selectedAnneeScolaire;
 
-      // Récupérer les infos de l'année scolaire pour les logs
-      const anneeScolaireInfo = anneesScolaires.find(a => a.id === anneeScolaireId);
-      console.log('📊 === DÉBUT CALCUL STATISTIQUES ===');
-      console.log('🗓️ Année scolaire sélectionnée:', anneeScolaireInfo?.nom, anneeScolaireInfo?.id);
-      
-      // Calculer les jours ouvrables pour l'année
-      const joursOuvrables = await anneeScolaireService.calculerJoursOuvrables(anneeScolaireId);
-      console.log('📅 Jours ouvrables de l\'année:', joursOuvrables);
-
       const [classes, temporal, individual] = await Promise.all([
         statisticsService.getClasseStatistics(anneeScolaireId),
         statisticsService.getTemporalStatistics(anneeScolaireId),
         statisticsService.getIndividualStatistics(anneeScolaireId)
       ]);
-      
-      console.log('🏫 Statistiques classes:', classes);
-      console.log('📅 Statistiques temporelles:', temporal);
-      console.log('👤 Statistiques individuelles:', individual);
-      console.log('📊 === FIN CALCUL STATISTIQUES ===');
       
       setClasseStats(classes);
       setTemporalStats(temporal);

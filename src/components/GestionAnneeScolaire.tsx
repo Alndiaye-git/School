@@ -82,10 +82,7 @@ const GestionAnneeScolaire: React.FC = () => {
       
       setAnneesScolaires(annees);
       setAnneeScolaireActive(anneActive);
-      
-      // Debug : afficher les données chargées
-      console.log('Données chargées:', { annees, anneActive });
-      
+
       if (anneActive) {
         const jours = await anneeScolaireService.calculerJoursOuvrables();
         setJoursOuvrables(jours);
