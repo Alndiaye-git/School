@@ -11,6 +11,7 @@ import Statistiques from './Statistiques';
 import GestionAnneeScolaire from './GestionAnneeScolaire';
 import ElevesEnseignant from './ElevesEnseignant';
 import SuperAdminDashboard from './SuperAdminDashboard';
+import ExportRapports from './ExportRapports';
 
 type ActiveView = 'home' | 'classes' | 'eleves' | 'enseignants' | 'absences-eleves' | 'absences-enseignants' | 'statistiques' | 'export' | 'annee-scolaire' | 'mes-eleves' | 'super-admin';
 
@@ -137,7 +138,7 @@ const Dashboard: React.FC = () => {
       case 'super-admin':
         return <SuperAdminDashboard />;
       case 'export':
-        return <div>Export CSV (à implémenter)</div>;
+        return <ExportRapports />;
       default:
         return (
           <div className="home-content">
@@ -445,6 +446,28 @@ const Dashboard: React.FC = () => {
                     <path d="M9 12l2 2 4-4"></path>
                   </svg>
                   {(!sidebarCollapsed || isMobile) && <span>Gestion Base de Données</span>}
+                </button>
+                <button
+                  className={activeView === 'statistiques' ? 'active' : ''}
+                  onClick={() => handleViewChange('statistiques')}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                  {(!sidebarCollapsed || isMobile) && <span>Statistiques</span>}
+                </button>
+                <button
+                  className={activeView === 'export' ? 'active' : ''}
+                  onClick={() => handleViewChange('export')}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  {(!sidebarCollapsed || isMobile) && <span>Export</span>}
                 </button>
               </div>
               
