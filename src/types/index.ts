@@ -38,6 +38,7 @@ export interface AbsenceEleve {
   id: string;
   eleve_id: string;
   date: string;
+  periode: 'matin' | 'apres-midi'; // Demi-journée : matin ou après-midi (OBLIGATOIRE)
   commentaire?: string;
   saisi_par: string;
   annee_scolaire_id?: string; // Lier l'absence à une année scolaire

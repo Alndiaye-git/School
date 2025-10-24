@@ -103,11 +103,11 @@ export class StatisticsService {
       const totalEleves = eleves.length;
       const totalClasses = classes.length;
       
-      // Calculer le taux d'absentéisme global
+      // Calculer le taux d'absentéisme global (en demi-journées)
       const joursEcole = await this.getJoursEcoleAnnee(anneeScolaireId);
-      const totalJoursEleves = totalEleves * joursEcole;
-      const totalAbsences = absences.length;
-      const tauxAbsenteisme = totalJoursEleves > 0 ? (totalAbsences / totalJoursEleves) * 100 : 0;
+      const totalDemiJourneesEleves = totalEleves * joursEcole * 2; // Multiplier par 2 pour avoir les demi-journées
+      const totalAbsences = absences.length; // Nombre de demi-journées d'absence
+      const tauxAbsenteisme = totalDemiJourneesEleves > 0 ? (totalAbsences / totalDemiJourneesEleves) * 100 : 0;
 
       // Calculer la tendance mensuelle
       const tendanceMensuelle = await this.calculateMonthlyTrend(absences, eleves, anneeScolaireId);
@@ -155,16 +155,16 @@ export class StatisticsService {
         );
 
         const totalEleves = elevesClasse.length;
-        const totalAbsences = absencesClasse.length;
-        
-        // Calculer le taux d'absentéisme de la classe
-        const totalJoursClasse = totalEleves * joursEcole;
-        const tauxAbsenteisme = totalJoursClasse > 0 ? (totalAbsences / totalJoursClasse) * 100 : 0;
+        const totalAbsences = absencesClasse.length; // Nombre de demi-journées d'absence
+
+        // Calculer le taux d'absentéisme de la classe (en demi-journées)
+        const totalDemiJourneesClasse = totalEleves * joursEcole * 2; // Multiplier par 2 pour les demi-journées
+        const tauxAbsenteisme = totalDemiJourneesClasse > 0 ? (totalAbsences / totalDemiJourneesClasse) * 100 : 0;
 
         console.log(`📝 Classe ${classe.nom}:`);
         console.log(`  - Élèves: ${totalEleves}`);
-        console.log(`  - Absences: ${totalAbsences}`);
-        console.log(`  - Total jours possibles (${totalEleves} × ${joursEcole}): ${totalJoursClasse}`);
+        console.log(`  - Absences (demi-journées): ${totalAbsences}`);
+        console.log(`  - Total demi-journées possibles (${totalEleves} × ${joursEcole} × 2): ${totalDemiJourneesClasse}`);
         console.log(`  - Taux d'absentéisme: ${tauxAbsenteisme}%`);
 
         // Calculer l'évolution mensuelle
@@ -240,18 +240,19 @@ export class StatisticsService {
       for (const eleve of eleves) {
         const absencesEleve = absences.filter(a => a.eleve_id === eleve.id);
         const classe = classes.find(c => c.id === eleve.classe_id);
-        
-        const totalAbsences = absencesEleve.length;
-        const tauxAbsenteisme = joursEcole > 0 ? (totalAbsences / joursEcole) * 100 : 0;
-        
-        const derniereAbsence = absencesEleve.length > 0 
+
+        const totalAbsences = absencesEleve.length; // Nombre de demi-journées d'absence
+        const totalDemiJourneesEleve = joursEcole * 2; // Multiplier par 2 pour les demi-journées
+        const tauxAbsenteisme = totalDemiJourneesEleve > 0 ? (totalAbsences / totalDemiJourneesEleve) * 100 : 0;
+
+        const derniereAbsence = absencesEleve.length > 0
           ? absencesEleve.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date
           : undefined;
 
         if (totalAbsences > 0) {
           console.log(`📝 Élève ${eleve.prenom} ${eleve.nom}:`);
-          console.log(`  - Absences: ${totalAbsences}`);
-          console.log(`  - Jours d'école: ${joursEcole}`);
+          console.log(`  - Absences (demi-journées): ${totalAbsences}`);
+          console.log(`  - Demi-journées d'école: ${totalDemiJourneesEleve}`);
           console.log(`  - Taux: ${tauxAbsenteisme}%`);
         }
 
@@ -330,9 +331,9 @@ export class StatisticsService {
       });
 
       const joursOuvrablesMois = 20; // Approximation
-      const totalJoursMois = eleves.length * joursOuvrablesMois;
-      const presents = totalJoursMois - absencesMois.length;
-      const tauxAbsenteisme = totalJoursMois > 0 ? (absencesMois.length / totalJoursMois) * 100 : 0;
+      const totalDemiJourneesMois = eleves.length * joursOuvrablesMois * 2; // Multiplier par 2 pour les demi-journées
+      const presents = totalDemiJourneesMois - absencesMois.length;
+      const tauxAbsenteisme = totalDemiJourneesMois > 0 ? (absencesMois.length / totalDemiJourneesMois) * 100 : 0;
 
       trends.push({
         mois: moisNames[i],
@@ -364,9 +365,9 @@ export class StatisticsService {
       });
 
       const joursOuvrables = 20;
-      const totalJours = eleves.length * joursOuvrables;
-      const presents = totalJours - absencesPeriode.length;
-      const tauxAbsenteisme = totalJours > 0 ? (absencesPeriode.length / totalJours) * 100 : 0;
+      const totalDemiJournees = eleves.length * joursOuvrables * 2; // Multiplier par 2 pour les demi-journées
+      const presents = totalDemiJournees - absencesPeriode.length;
+      const tauxAbsenteisme = totalDemiJournees > 0 ? (absencesPeriode.length / totalDemiJournees) * 100 : 0;
 
       evolution.push({
         periode: derniersMois[i],
@@ -430,14 +431,14 @@ export class StatisticsService {
       });
 
       const nombreJoursDeCeType = joursParType[dayNum] || 0;
-      const totalPossible = eleves.length * nombreJoursDeCeType;
-      const presents = totalPossible - absencesJour.length;
-      const tauxAbsenteisme = totalPossible > 0 ? (absencesJour.length / totalPossible) * 100 : 0;
+      const totalDemiJourneesPossible = eleves.length * nombreJoursDeCeType * 2; // Multiplier par 2 pour les demi-journées
+      const presents = totalDemiJourneesPossible - absencesJour.length;
+      const tauxAbsenteisme = totalDemiJourneesPossible > 0 ? (absencesJour.length / totalDemiJourneesPossible) * 100 : 0;
 
       console.log(`📊 ${jours[dayNum]}:`);
-      console.log(`  - Absences ce jour: ${absencesJour.length}`);
+      console.log(`  - Absences (demi-journées) ce jour: ${absencesJour.length}`);
       console.log(`  - Jours de ce type dans l'année: ${nombreJoursDeCeType}`);
-      console.log(`  - Total possible (${eleves.length} élèves × ${nombreJoursDeCeType} jours): ${totalPossible}`);
+      console.log(`  - Total demi-journées possible (${eleves.length} élèves × ${nombreJoursDeCeType} jours × 2): ${totalDemiJourneesPossible}`);
       console.log(`  - Présents: ${presents}`);
       console.log(`  - Taux d'absentéisme: ${tauxAbsenteisme}%`);
 
@@ -469,21 +470,22 @@ export class StatisticsService {
 
     console.log('📅 Absences par date:', absencesParDate);
 
-    // Trouver les pics (plus de 20% d'absences sur une journée)
-    const seuil = Math.max(1, Math.floor(eleves.length * 0.2));
-    console.log('🎯 Seuil pour pic (20% des élèves):', seuil);
-    
+    // Trouver les pics (plus de 20% de demi-journées d'absence sur une journée)
+    const totalDemiJourneesParJour = eleves.length * 2; // 2 demi-journées par jour
+    const seuil = Math.max(1, Math.floor(totalDemiJourneesParJour * 0.2));
+    console.log('🎯 Seuil pour pic (20% des demi-journées):', seuil);
+
     const pics: PeakAbsence[] = Object.entries(absencesParDate)
       .filter(([date, count]) => count >= seuil)
       .map(([date, count]) => {
-        const tauxAbsenteisme = eleves.length > 0 ? (count / eleves.length) * 100 : 0;
-        console.log(`📊 ${date}: ${count} absences / ${eleves.length} élèves = ${tauxAbsenteisme}%`);
-        
+        const tauxAbsenteisme = totalDemiJourneesParJour > 0 ? (count / totalDemiJourneesParJour) * 100 : 0;
+        console.log(`📊 ${date}: ${count} demi-journées d'absence / ${totalDemiJourneesParJour} demi-journées possibles = ${tauxAbsenteisme}%`);
+
         return {
           date,
           absences: count,
           tauxAbsenteisme: Math.round(tauxAbsenteisme * 100) / 100,
-          commentaire: count > eleves.length * 0.5 ? 'Pic majeur - Événement inhabituel' : 'Absence groupée'
+          commentaire: count > totalDemiJourneesParJour * 0.5 ? 'Pic majeur - Événement inhabituel' : 'Absence groupée'
         };
       })
       .sort((a, b) => b.absences - a.absences)
@@ -507,10 +509,11 @@ export class StatisticsService {
 
       let alerte: AlerteEleve | null = null;
 
-      if (absencesRecentes >= 5) {
+      // Seuils adaptés aux demi-journées (doublés par rapport aux anciens seuils par jour)
+      if (absencesRecentes >= 10) { // >= 10 demi-journées = 5 jours complets
         alerte = {
           eleve: eleveStats.eleve,
-          raison: `${absencesRecentes} absences dans les 2 dernières semaines`,
+          raison: `${absencesRecentes} demi-journées d'absence dans les 2 dernières semaines`,
           niveau: 'danger',
           absencesRecentes,
           classeName: eleveStats.classeName
@@ -523,10 +526,10 @@ export class StatisticsService {
           absencesRecentes,
           classeName: eleveStats.classeName
         };
-      } else if (absencesRecentes >= 3) {
+      } else if (absencesRecentes >= 6) { // >= 6 demi-journées = 3 jours complets
         alerte = {
           eleve: eleveStats.eleve,
-          raison: `${absencesRecentes} absences récentes`,
+          raison: `${absencesRecentes} demi-journées d'absence récentes`,
           niveau: 'warning',
           absencesRecentes,
           classeName: eleveStats.classeName

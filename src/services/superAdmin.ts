@@ -621,31 +621,36 @@ class SuperAdminService {
         result.createdCounts.eleves++;
       }
 
-      // 5. Créer quelques absences aléatoires
+      // 5. Créer quelques absences aléatoires (en demi-journées)
       const motifs = ["Maladie", "Rendez-vous médical", "Problème familial", "Fièvre", "Gastro"];
+      const periodes: ('matin' | 'apres-midi')[] = ['matin', 'apres-midi'];
       const today = new Date();
       const startSchool = new Date('2024-09-02');
-      
+
       for (const eleveId of eleveIds) {
-        // 1-3 absences par élève
+        // 1-3 demi-journées d'absence par élève
         const numAbsences = Math.floor(Math.random() * 3) + 1;
-        
+
         for (let i = 0; i < numAbsences; i++) {
           // Date aléatoire entre le début d'année et aujourd'hui
           const randomTime = startSchool.getTime() + Math.random() * (today.getTime() - startSchool.getTime());
           const randomDate = new Date(randomTime);
-          
+
           // Éviter les weekends
           if (randomDate.getDay() !== 0 && randomDate.getDay() !== 6) {
+            // Choisir aléatoirement matin ou après-midi
+            const periode = periodes[Math.floor(Math.random() * periodes.length)];
+
             const absenceData = {
               eleve_id: eleveId,
               date: randomDate.toISOString().split('T')[0],
+              periode: periode, // Champ obligatoire : 'matin' ou 'apres-midi'
               commentaire: motifs[Math.floor(Math.random() * motifs.length)],
               saisi_par: currentUser.id,
               annee_scolaire_id: anneeScolaireRef.id,
               created_at: serverTimestamp()
             };
-            
+
             await addDoc(collection(db, 'absences_eleves'), absenceData);
             result.createdCounts.absences++;
           }

@@ -109,9 +109,10 @@ export class ExportAbsencesService {
         
         const elevesData: AbsenceExportData[] = elevesClasse.map(eleve => {
           const absencesEleve = absences.filter(a => a.eleve_id === eleve.id);
-          const totalAbsences = absencesEleve.length;
-          const tauxAbsenteisme = joursOuvrables > 0 ? 
-            Math.round((totalAbsences / joursOuvrables) * 10000) / 100 : 0;
+          const totalAbsences = absencesEleve.length; // Nombre de demi-journées d'absence
+          const totalDemiJournees = joursOuvrables * 2; // Multiplier par 2 pour les demi-journées
+          const tauxAbsenteisme = totalDemiJournees > 0 ?
+            Math.round((totalAbsences / totalDemiJournees) * 10000) / 100 : 0;
 
           return {
             eleve,
@@ -160,19 +161,23 @@ export class ExportAbsencesService {
    */
   async genererCSV(anneeScolaireId: string): Promise<string> {
     const data = await this.genererDonneesExport(anneeScolaireId);
-    
-    let csv = 'Classe,Élève (Nom),Élève (Prénom),Numéro Élève,Total Absences,Taux Absentéisme (%),Détail des Absences\n';
-    
+
+    let csv = 'Classe,Élève (Nom),Élève (Prénom),Numéro Élève,Demi-journées d\'absence,Taux Absentéisme (%),Détail des Absences\n';
+
     data.classes.forEach(classeData => {
       classeData.eleves.forEach(eleveData => {
         const detailAbsences = eleveData.absences
-          .map(abs => new Date(abs.date).toLocaleDateString('fr-FR'))
+          .map(abs => {
+            const date = new Date(abs.date).toLocaleDateString('fr-FR');
+            const periode = abs.periode === 'matin' ? 'Matin' : 'Après-midi';
+            return `${date} (${periode})`;
+          })
           .join('; ');
-        
+
         csv += `"${classeData.classe.nom}","${eleveData.eleve.nom}","${eleveData.eleve.prenom}","${eleveData.eleve.numero_eleve || ''}",${eleveData.totalAbsences},${eleveData.tauxAbsenteisme},"${detailAbsences}"\n`;
       });
     });
-    
+
     return csv;
   }
 
@@ -323,8 +328,9 @@ export class ExportAbsencesService {
     <div class="summary">
         <h3>📊 Résumé de l'année</h3>
         <p><strong>Total élèves :</strong> ${data.totalElevesAnnee}</p>
-        <p><strong>Total absences :</strong> ${data.totalAbsencesAnnee}</p>
+        <p><strong>Total demi-journées d'absence :</strong> ${data.totalAbsencesAnnee}</p>
         <p><strong>Taux moyen d'absentéisme :</strong> ${data.tauxMoyenAnnee}%</p>
+        <p><strong>Note :</strong> Chaque jour compte pour 2 demi-journées (matin + après-midi)</p>
         <p><strong>Rapport généré le :</strong> ${new Date(data.dateGeneration).toLocaleDateString('fr-FR')} à ${new Date(data.dateGeneration).toLocaleTimeString('fr-FR')}</p>
     </div>
 
@@ -334,19 +340,19 @@ export class ExportAbsencesService {
             <h3>📚 Classe ${classeData.classe.nom} (${classeData.classe.niveau})</h3>
         </div>
         
-        <p><strong>Effectif :</strong> ${classeData.eleves.length} élèves | 
-           <strong>Total absences :</strong> ${classeData.totalAbsencesClasse} | 
+        <p><strong>Effectif :</strong> ${classeData.eleves.length} élèves |
+           <strong>Total demi-journées d'absence :</strong> ${classeData.totalAbsencesClasse} |
            <strong>Taux moyen :</strong> ${classeData.tauxMoyenClasse}%</p>
-        
+
         <table>
             <thead>
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
                     <th>N° Élève</th>
-                    <th class="text-center">Total Absences</th>
+                    <th class="text-center">Demi-journées d'absence</th>
                     <th class="text-center">Taux (%)</th>
-                    <th>Dates d'absence</th>
+                    <th>Dates d'absence (avec période)</th>
                 </tr>
             </thead>
             <tbody>
@@ -357,7 +363,11 @@ export class ExportAbsencesService {
                     <td class="text-center">${eleveData.eleve.numero_eleve || 'N/A'}</td>
                     <td class="text-center">${eleveData.totalAbsences}</td>
                     <td class="text-center">${eleveData.tauxAbsenteisme}%</td>
-                    <td>${eleveData.absences.map(abs => new Date(abs.date).toLocaleDateString('fr-FR')).join(', ')}</td>
+                    <td>${eleveData.absences.map(abs => {
+                      const date = new Date(abs.date).toLocaleDateString('fr-FR');
+                      const periode = abs.periode === 'matin' ? 'Matin' : 'Après-midi';
+                      return `${date} (${periode})`;
+                    }).join(', ')}</td>
                 </tr>
                 `).join('')}
             </tbody>

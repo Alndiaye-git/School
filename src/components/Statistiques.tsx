@@ -160,7 +160,8 @@ const Statistiques: React.FC = () => {
               <div className="explanation-icon">💡</div>
               <div className="explanation-content">
                 <p><strong>Analyse comparative</strong> - Classement de toutes les classes selon leur taux d'absentéisme annuel</p>
-                <p>🎯 <strong>Calcul :</strong> (Total absences élèves ÷ Total jours possibles) × 100</p>
+                <p>🎯 <strong>Calcul :</strong> (Total demi-journées d'absence ÷ Total demi-journées possibles) × 100</p>
+                <p>📝 <strong>Note :</strong> Chaque jour compte pour 2 demi-journées (matin + après-midi)</p>
                 <p>📌 <strong>Seuils :</strong> Normal &lt;8% • Attention 8-15% • Critique &gt;15%</p>
               </div>
             </div>
@@ -173,7 +174,7 @@ const Statistiques: React.FC = () => {
                   <th>Rang</th>
                   <th>Classe</th>
                   <th>Effectif</th>
-                  <th>Total absences</th>
+                  <th>Demi-journées d'absence</th>
                   <th>Taux d'absentéisme</th>
                   <th>Évaluation</th>
                 </tr>
@@ -339,7 +340,7 @@ const Statistiques: React.FC = () => {
                     )}
                   </div>
                   <div className="weekday-value">{jour.tauxAbsenteisme}%</div>
-                  <div className="weekday-count">{jour.absences} absences</div>
+                  <div className="weekday-count">{jour.absences} demi-journées</div>
                   <div className="weekday-total">sur {temporalStats.parJourSemaine[0].presents + temporalStats.parJourSemaine[0].absences} possibles</div>
                 </div>
               ))}
@@ -369,7 +370,8 @@ const Statistiques: React.FC = () => {
             <div className="explanation-box">
               <div className="explanation-icon">🔍</div>
               <div className="explanation-content">
-                <p><strong>Détection automatique</strong> - Jours où plus de 20% des élèves étaient absents</p>
+                <p><strong>Détection automatique</strong> - Jours où plus de 20% des demi-journées ont été manquées</p>
+                <p>📝 <strong>Note :</strong> Chaque jour peut avoir des absences matin et/ou après-midi</p>
                 <p>📈 <strong>Utilité :</strong> Identifier les événements inhabituels, congés groupés ou problèmes ponctuels</p>
               </div>
             </div>
@@ -392,13 +394,13 @@ const Statistiques: React.FC = () => {
                     <div className="peak-stats">
                       <div className="peak-metric">
                         <span className="metric-value">{pic.absences}</span>
-                        <span className="metric-label">élèves absents</span>
+                        <span className="metric-label">demi-journées d'absence</span>
                       </div>
                       <div className="peak-metric">
                         <span className={`metric-value rate-badge ${pic.tauxAbsenteisme > 50 ? 'critical' : 'high'}`}>
                           {pic.tauxAbsenteisme}%
                         </span>
-                        <span className="metric-label">de l'école</span>
+                        <span className="metric-label">du total possible</span>
                       </div>
                     </div>
                     {pic.commentaire && (
@@ -450,7 +452,7 @@ const Statistiques: React.FC = () => {
                     <div className="alert-reason">{alerte.raison}</div>
                   </div>
                   <div className="alert-count">
-                    {alerte.absencesRecentes} récentes
+                    {alerte.absencesRecentes} demi-journées
                   </div>
                 </div>
               ))}
@@ -469,7 +471,7 @@ const Statistiques: React.FC = () => {
                   <th>Élève</th>
                   <th>Classe</th>
                   <th>Taux d'absentéisme</th>
-                  <th>Total absences</th>
+                  <th>Demi-journées d'absence</th>
                   <th>Dernière absence</th>
                 </tr>
               </thead>
@@ -513,7 +515,7 @@ const Statistiques: React.FC = () => {
                     <th>Élève</th>
                     <th>Classe</th>
                     <th>Taux d'absentéisme</th>
-                    <th>Total absences</th>
+                    <th>Demi-journées d'absence</th>
                     <th>Dernière absence</th>
                     <th>Statut</th>
                   </tr>
@@ -584,15 +586,17 @@ const Statistiques: React.FC = () => {
             <div className="explanation-section">
               <h4>🏫 Statistiques par classe</h4>
               <div className="formula-box">
-                <strong>Formule :</strong> Taux d'absentéisme = (Total absences classe ÷ Total jours possibles) × 100<br/>
-                <strong>Total jours possibles :</strong> Nombre d'élèves × Jours de cours dans l'année
+                <strong>Formule :</strong> Taux d'absentéisme = (Total demi-journées d'absence ÷ Total demi-journées possibles) × 100<br/>
+                <strong>Total demi-journées possibles :</strong> Nombre d'élèves × Jours de cours × 2 (matin + après-midi)<br/>
+                <strong>Note importante :</strong> Chaque jour compte pour 2 demi-journées
               </div>
               <div className="example-box">
                 <strong>Exemple :</strong><br/>
                 • Classe avec 4 élèves<br/>
                 • 214 jours de cours dans l'année<br/>
-                • 5 absences enregistrées<br/>
-                • Calcul : 5 ÷ (4 × 214) × 100 = 0,58%
+                • 5 demi-journées d'absence enregistrées<br/>
+                • Total possible : 4 élèves × 214 jours × 2 = 1712 demi-journées<br/>
+                • Calcul : 5 ÷ 1712 × 100 = 0,29%
               </div>
             </div>
 
@@ -601,37 +605,42 @@ const Statistiques: React.FC = () => {
               <div className="formula-box">
                 <strong>Par jour de semaine :</strong><br/>
                 • Compte le nombre réel de chaque jour (lundi, mardi...) dans l'année scolaire<br/>
-                • Taux = (Absences ce jour ÷ (Élèves × Nombre de ces jours)) × 100
+                • Taux = (Demi-journées d'absence ce jour ÷ (Élèves × Nombre de ces jours × 2)) × 100<br/>
+                • Note : Chaque jour compte pour 2 demi-journées
               </div>
               <div className="example-box">
                 <strong>Exemple pour les mercredis :</strong><br/>
                 • 43 mercredis de cours dans l'année<br/>
                 • 6 élèves au total<br/>
-                • 6 absences le mercredi<br/>
-                • Calcul : 6 ÷ (6 × 43) × 100 = 2,33%
+                • 6 demi-journées d'absence le mercredi<br/>
+                • Total possible : 6 élèves × 43 jours × 2 = 516 demi-journées<br/>
+                • Calcul : 6 ÷ 516 × 100 = 1,16%
               </div>
               <div className="formula-box">
                 <strong>Pics d'absences :</strong><br/>
-                • Détecte les jours où plus de 20% des élèves sont absents<br/>
-                • Permet d'identifier des événements exceptionnels
+                • Détecte les jours où plus de 20% des demi-journées ont été manquées<br/>
+                • Permet d'identifier des événements exceptionnels<br/>
+                • Note : Un jour peut avoir des absences matin et/ou après-midi
               </div>
             </div>
 
             <div className="explanation-section">
               <h4>👤 Statistiques individuelles</h4>
               <div className="formula-box">
-                <strong>Taux individuel :</strong> (Absences élève ÷ Jours de cours totaux) × 100<br/>
+                <strong>Taux individuel :</strong> (Demi-journées d'absence ÷ Total demi-journées possibles) × 100<br/>
+                <strong>Total demi-journées possibles :</strong> Jours de cours × 2 (matin + après-midi)<br/>
                 <strong>Seuils d'alerte :</strong><br/>
                 • Normal : &lt; 8%<br/>
                 • Surveillance : 8-15%<br/>
                 • Intervention : &gt; 15%<br/>
-                • Alerte récente : 3+ absences en 2 semaines
+                • Alerte récente : 6+ demi-journées en 2 semaines (= 3 jours complets)<br/>
+                • Alerte critique : 10+ demi-journées en 2 semaines (= 5 jours complets)
               </div>
               <div className="example-box">
                 <strong>Exemple :</strong><br/>
-                • Élève avec 4 absences<br/>
-                • Sur 214 jours de cours<br/>
-                • Calcul : 4 ÷ 214 × 100 = 1,87%<br/>
+                • Élève avec 4 demi-journées d'absence<br/>
+                • Sur 214 jours de cours (= 428 demi-journées)<br/>
+                • Calcul : 4 ÷ 428 × 100 = 0,93%<br/>
                 • Statut : Normal (pas de suivi nécessaire)
               </div>
             </div>
@@ -639,11 +648,13 @@ const Statistiques: React.FC = () => {
             <div className="explanation-section">
               <h4>🎯 Points importants</h4>
               <div className="info-box">
+                • <strong>Système de demi-journées :</strong> Chaque jour compte pour 2 demi-journées (matin + après-midi)<br/>
                 • Les weekends ne sont jamais comptés<br/>
                 • Les vacances et jours fériés sont exclus<br/>
                 • Seules les absences de l'année scolaire sélectionnée sont prises en compte<br/>
                 • Les élèves inactifs (supprimés) ne sont pas inclus<br/>
-                • Les calculs sont mis à jour en temps réel
+                • Les calculs sont mis à jour en temps réel<br/>
+                • <strong>Note :</strong> Un élève peut être absent uniquement le matin, uniquement l'après-midi, ou toute la journée
               </div>
             </div>
           </div>

@@ -120,10 +120,11 @@ export class AbsencesEleveService {
       // Calculer le nombre de jours ouvrables dans l'année
       const joursOuvrables = await anneeScolaireService.calculerJoursOuvrables(anneeScolaireId);
       
-      // Statistiques de base
-      const totalAbsences = absences.length;
-      const tauxAbsenteisme = joursOuvrables.totalJours > 0 ? 
-        Math.round((totalAbsences / joursOuvrables.totalJours) * 10000) / 100 : 0;
+      // Statistiques de base (en demi-journées)
+      const totalAbsences = absences.length; // Nombre de demi-journées d'absence
+      const totalDemiJournees = joursOuvrables.totalJours * 2; // Multiplier par 2 pour avoir les demi-journées
+      const tauxAbsenteisme = totalDemiJournees > 0 ?
+        Math.round((totalAbsences / totalDemiJournees) * 10000) / 100 : 0;
 
       // Grouper par mois
       const absencesParMois: { [mois: string]: number } = {};

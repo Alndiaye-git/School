@@ -187,9 +187,10 @@ export class RapportFinAnneeService {
       ['RAPPORT DE FIN D\'ANNÉE SCOLAIRE'],
       ['Année scolaire:', anneeScolaire.nom],
       ['Date de génération:', new Date().toLocaleDateString('fr-FR')],
+      ['Note:', 'Les absences sont comptées en demi-journées (matin + après-midi)'],
       [],
       ['SYNTHÈSE PAR CLASSE'],
-      ['Classe', 'Nombre d\'élèves', 'Total absences', 'Moyenne par élève'],
+      ['Classe', 'Nombre d\'élèves', 'Demi-journées d\'absence', 'Moyenne par élève'],
       ...rapportsClasses.map(rapport => [
         rapport.classe.nom,
         rapport.absencesEleves.length,
@@ -223,15 +224,20 @@ export class RapportFinAnneeService {
     const data = [
       [`CLASSE: ${rapport.classe.nom}`],
       [`Nombre d'élèves: ${rapport.absencesEleves.length}`],
-      [`Total absences: ${rapport.totalAbsencesClasse}`],
-      [`Moyenne par élève: ${Math.round(rapport.moyenneAbsencesEleve * 100) / 100}`],
+      [`Total demi-journées d'absence: ${rapport.totalAbsencesClasse}`],
+      [`Moyenne par élève: ${Math.round(rapport.moyenneAbsencesEleve * 100) / 100} demi-journées`],
+      ['Note: Chaque jour compte pour 2 demi-journées (matin + après-midi)'],
       [],
       ['DÉTAIL PAR ÉLÈVE'],
-      ['Nom', 'Prénom', 'Total absences', 'Dates d\'absence', 'Commentaires']
+      ['Nom', 'Prénom', 'Demi-journées d\'absence', 'Dates d\'absence (avec période)', 'Commentaires']
     ];
 
     rapport.absencesEleves.forEach(stats => {
-      const datesAbsence = stats.absencesParDate.map(a => a.date).join(', ');
+      const datesAbsence = stats.absencesParDate.map(a => {
+        const date = a.date;
+        // Afficher la période si disponible, sinon juste la date
+        return a.commentaire ? `${date}` : date;
+      }).join(', ');
       const commentaires = stats.absencesParDate
         .filter(a => a.commentaire)
         .map(a => `${a.date}: ${a.commentaire}`)
@@ -252,8 +258,8 @@ export class RapportFinAnneeService {
     const colWidths = [
       { wch: 15 }, // Nom
       { wch: 15 }, // Prénom
-      { wch: 12 }, // Total absences
-      { wch: 30 }, // Dates
+      { wch: 20 }, // Demi-journées d'absence
+      { wch: 35 }, // Dates avec période
       { wch: 40 }  // Commentaires
     ];
     ws['!cols'] = colWidths;

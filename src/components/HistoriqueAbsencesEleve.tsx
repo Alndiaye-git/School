@@ -160,11 +160,11 @@ const HistoriqueAbsencesEleve: React.FC<HistoriqueAbsencesEleveProps> = ({ eleve
 
   const renderAbsencesList = () => {
     const filteredAbsences = getFilteredAbsences();
-    
+
     if (filteredAbsences.length === 0) {
       return (
         <div className="no-absences-simple">
-          <p>Aucune absence {selectedMonth !== 'tous' ? `en ${selectedMonth}` : 'cette année'}</p>
+          <p>Aucune demi-journée d'absence {selectedMonth !== 'tous' ? `en ${selectedMonth}` : 'cette année'}</p>
         </div>
       );
     }
@@ -182,6 +182,14 @@ const HistoriqueAbsencesEleve: React.FC<HistoriqueAbsencesEleveProps> = ({ eleve
                   month: 'long',
                   year: 'numeric'
                 })}
+              </div>
+              <div className="absence-periode" style={{
+                marginTop: '4px',
+                fontSize: '0.85rem',
+                color: '#666',
+                fontWeight: 500
+              }}>
+                {absence.periode === 'matin' ? '🌅 Matin' : '🌇 Après-midi'}
               </div>
             </div>
           ))}
@@ -268,7 +276,7 @@ const HistoriqueAbsencesEleve: React.FC<HistoriqueAbsencesEleveProps> = ({ eleve
           <div className="stats-summary">
             <div className="stat-item-simple">
               <span className="stat-number">{statistiques?.totalAbsences || 0}</span>
-              <span className="stat-label">absences</span>
+              <span className="stat-label">demi-journées d'absence</span>
             </div>
             <div className="stat-item-simple">
               <span className="stat-number">{statistiques?.tauxAbsenteisme || 0}%</span>
@@ -276,7 +284,7 @@ const HistoriqueAbsencesEleve: React.FC<HistoriqueAbsencesEleveProps> = ({ eleve
             </div>
             <div className="stat-item-simple">
               <span className="stat-number">{statistiques?.moyenneAbsencesParMois || 0}</span>
-              <span className="stat-label">par mois</span>
+              <span className="stat-label">demi-journées par mois</span>
             </div>
           </div>
 
@@ -288,10 +296,10 @@ const HistoriqueAbsencesEleve: React.FC<HistoriqueAbsencesEleveProps> = ({ eleve
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 className="month-select"
               >
-                <option value="tous">Tous les mois ({absences.length} absences)</option>
+                <option value="tous">Tous les mois ({absences.length} demi-journées)</option>
                 {getMonthsList().map(month => (
                   <option key={month} value={month}>
-                    {month} ({absences.filter(a => a.mois === month).length})
+                    {month} ({absences.filter(a => a.mois === month).length} demi-journées)
                   </option>
                 ))}
               </select>

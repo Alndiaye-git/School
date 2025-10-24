@@ -346,7 +346,7 @@ const Dashboard: React.FC = () => {
               
               <div className="nav-section">
                 {(!sidebarCollapsed || isMobile) && <h3>Administration</h3>}
-                <button 
+                <button
                   className={activeView === 'annee-scolaire' ? 'active' : ''}
                   onClick={() => handleViewChange('annee-scolaire')}
                 >
@@ -436,7 +436,7 @@ const Dashboard: React.FC = () => {
             <>
               <div className="nav-section super-admin-section">
                 {(!sidebarCollapsed || isMobile) && <h3>🔧 Super Administration</h3>}
-                <button 
+                <button
                   className={activeView === 'super-admin' ? 'active' : ''}
                   onClick={() => handleViewChange('super-admin')}
                 >

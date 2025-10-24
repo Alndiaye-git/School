@@ -15,7 +15,8 @@ import { useAuth } from '../contexts/AuthContext';
 import TableResponsive from './TableResponsive';
 
 interface EleveWithAbsence extends Eleve {
-  absence?: AbsenceEleve;
+  absenceMatin?: AbsenceEleve;
+  absenceApresMidi?: AbsenceEleve;
 }
 
 type SortField = 'nom' | 'prenom' | 'numero_eleve' | 'status';
@@ -83,22 +84,23 @@ const SaisieAbsences: React.FC = () => {
 
   const loadElevesAndAbsences = async () => {
     if (!selectedClasse || !selectedDate) return;
-    
+
     setLoading(true);
     try {
       // Charger uniquement les élèves actifs
       const eleves = await getActiveElevesByClasse(selectedClasse);
-      
+
       // Charger les absences existantes
       const eleveIds = eleves.map(e => e.id);
       const absences = await getAbsencesElevesByDateAndClasse(selectedDate, eleveIds);
-      
-      // Associer les absences aux élèves
+
+      // Associer les absences aux élèves (séparer matin et après-midi)
       const elevesWithAbs: EleveWithAbsence[] = eleves.map(eleve => {
-        const absence = absences.find(a => a.eleve_id === eleve.id);
-        return { ...eleve, absence };
+        const absenceMatin = absences.find(a => a.eleve_id === eleve.id && a.periode === 'matin');
+        const absenceApresMidi = absences.find(a => a.eleve_id === eleve.id && a.periode === 'apres-midi');
+        return { ...eleve, absenceMatin, absenceApresMidi };
       });
-      
+
       setElevesWithAbsence(elevesWithAbs);
       updateStats(elevesWithAbs);
     } catch (error) {
@@ -110,9 +112,17 @@ const SaisieAbsences: React.FC = () => {
 
   const updateStats = (elevesData: EleveWithAbsence[]) => {
     const total = elevesData.length;
-    const absents = elevesData.filter(e => e.absence).length;
-    const presents = total - absents;
-    setStats({ total, absents, presents });
+    // Compter les demi-journées d'absence
+    const absencesMatin = elevesData.filter(e => e.absenceMatin).length;
+    const absencesApresMidi = elevesData.filter(e => e.absenceApresMidi).length;
+    const totalAbsencesDemiJournees = absencesMatin + absencesApresMidi;
+    const totalPresencesDemiJournees = (total * 2) - totalAbsencesDemiJournees;
+
+    setStats({
+      total: total * 2, // Total de demi-journées possibles
+      absents: totalAbsencesDemiJournees,
+      presents: totalPresencesDemiJournees
+    });
   };
 
   const showMessage = (type: 'success' | 'error', text: string) => {
@@ -123,59 +133,64 @@ const SaisieAbsences: React.FC = () => {
     }, 3000);
   };
 
-  const handleAbsenceToggle = async (eleve: EleveWithAbsence) => {
+  const handleAbsenceToggle = async (eleve: EleveWithAbsence, periode: 'matin' | 'apres-midi') => {
     if (!userData?.id) return;
-    
+
     // Vérifier si l'année est verrouillée
     if (isAnneeVerrouillee) {
       showMessage('error', '🔒 Cette année scolaire est verrouillée. Les modifications sont interdites.');
       return;
     }
-    
+
     // Vérifier si la date est dans l'année scolaire et est un jour de cours
     if (!isJourDeCours) {
       showMessage('error', 'Impossible de modifier les absences sur un jour non scolaire');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      if (eleve.absence) {
+      const absence = periode === 'matin' ? eleve.absenceMatin : eleve.absenceApresMidi;
+      const periodeLabel = periode === 'matin' ? 'matin' : 'après-midi';
+
+      if (absence) {
         // Supprimer l'absence
-        await deleteAbsenceEleve(eleve.absence.id);
-        showMessage('success', `${eleve.prenom} ${eleve.nom} marqué(e) présent(e)`);
+        await deleteAbsenceEleve(absence.id);
+        showMessage('success', `${eleve.prenom} ${eleve.nom} marqué(e) présent(e) - ${periodeLabel}`);
       } else {
-        // Créer l'absence
+        // Créer l'absence pour cette période
         await createAbsenceEleve({
           eleve_id: eleve.id,
           date: selectedDate,
+          periode: periode,
           saisi_par: userData.id,
           commentaire: ''
         });
-        showMessage('error', `${eleve.prenom} ${eleve.nom} marqué(e) absent(e)`);
+        showMessage('error', `${eleve.prenom} ${eleve.nom} marqué(e) absent(e) - ${periodeLabel}`);
       }
-      
+
       // Recharger les données
       await loadElevesAndAbsences();
     } catch (error) {
       console.error('Erreur:', error);
       showMessage('error', 'Erreur lors de l\'enregistrement');
     }
-    
+
     setLoading(false);
   };
 
   // Fonction de tri
   const sortEleves = (eleves: EleveWithAbsence[], field: SortField, order: SortOrder) => {
     return [...eleves].sort((a, b) => {
-      let aValue: string | boolean;
-      let bValue: string | boolean;
-      
+      let aValue: string | boolean | number;
+      let bValue: string | boolean | number;
+
       switch (field) {
         case 'status':
-          aValue = !!a.absence;
-          bValue = !!b.absence;
+          // Compter le nombre d'absences (0, 1 ou 2)
+          aValue = (a.absenceMatin ? 1 : 0) + (a.absenceApresMidi ? 1 : 0);
+          bValue = (b.absenceMatin ? 1 : 0) + (b.absenceApresMidi ? 1 : 0);
           break;
         case 'numero_eleve':
           aValue = a.numero_eleve || '';
@@ -185,18 +200,22 @@ const SaisieAbsences: React.FC = () => {
           aValue = a[field];
           bValue = b[field];
       }
-      
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return order === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
       if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
-        return order === 'asc' ? 
-          (aValue === bValue ? 0 : aValue ? 1 : -1) : 
+        return order === 'asc' ?
+          (aValue === bValue ? 0 : aValue ? 1 : -1) :
           (aValue === bValue ? 0 : aValue ? -1 : 1);
       }
-      
+
       const aStr = String(aValue).toLowerCase();
       const bStr = String(bValue).toLowerCase();
-      
-      return order === 'asc' ? 
-        aStr.localeCompare(bStr, 'fr', { sensitivity: 'accent' }) : 
+
+      return order === 'asc' ?
+        aStr.localeCompare(bStr, 'fr', { sensitivity: 'accent' }) :
         bStr.localeCompare(aStr, 'fr', { sensitivity: 'accent' });
     });
   };
@@ -204,26 +223,27 @@ const SaisieAbsences: React.FC = () => {
   // Fonction de filtrage
   const filterEleves = (eleves: EleveWithAbsence[]) => {
     let filtered = eleves;
-    
+
     // Filtre par statut
     if (filterStatus !== 'all') {
       filtered = filtered.filter(eleve => {
-        if (filterStatus === 'absent') return !!eleve.absence;
-        if (filterStatus === 'present') return !eleve.absence;
+        const hasAbsence = eleve.absenceMatin || eleve.absenceApresMidi;
+        if (filterStatus === 'absent') return hasAbsence;
+        if (filterStatus === 'present') return !hasAbsence;
         return true;
       });
     }
-    
+
     // Filtre par recherche
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(eleve => 
+      filtered = filtered.filter(eleve =>
         eleve.nom.toLowerCase().includes(term) ||
         eleve.prenom.toLowerCase().includes(term) ||
         (eleve.numero_eleve && eleve.numero_eleve.toLowerCase().includes(term))
       );
     }
-    
+
     return filtered;
   };
 
@@ -338,9 +358,9 @@ const SaisieAbsences: React.FC = () => {
                 {getClasseInfo()} • {formatDate(selectedDate)}
               </div>
               <div className="stats-badges">
-                <span className="badge-total">{stats.total} élèves</span>
-                <span className="badge-present">{stats.presents} présents</span>
-                <span className="badge-absent">{stats.absents} absents</span>
+                <span className="badge-total">{stats.total} demi-journées</span>
+                <span className="badge-present">{stats.presents} présences</span>
+                <span className="badge-absent">{stats.absents} absences</span>
               </div>
             </div>
           )}
@@ -421,24 +441,43 @@ const SaisieAbsences: React.FC = () => {
               {
                 key: 'status',
                 label: 'Statut',
-                width: '120px',
+                width: '180px',
                 render: (_, eleve: EleveWithAbsence) => (
-                  <div className={`status-badge ${eleve.absence ? 'status-absent' : 'status-present'}`}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      {eleve.absence ? (
-                        <>
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="8" y1="8" x2="16" y2="16"></line>
-                          <line x1="16" y1="8" x2="8" y2="16"></line>
-                        </>
-                      ) : (
-                        <>
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="8 12 12 16 16 8"></polyline>
-                        </>
-                      )}
-                    </svg>
-                    <span>{eleve.absence ? 'Absent' : 'Présent'}</span>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className={`status-badge ${eleve.absenceMatin ? 'status-absent' : 'status-present'}`}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {eleve.absenceMatin ? (
+                          <>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="8" y1="8" x2="16" y2="16"></line>
+                            <line x1="16" y1="8" x2="8" y2="16"></line>
+                          </>
+                        ) : (
+                          <>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="8 12 12 16 16 8"></polyline>
+                          </>
+                        )}
+                      </svg>
+                      <span style={{ fontSize: '0.85rem' }}>Matin</span>
+                    </div>
+                    <div className={`status-badge ${eleve.absenceApresMidi ? 'status-absent' : 'status-present'}`}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {eleve.absenceApresMidi ? (
+                          <>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="8" y1="8" x2="16" y2="16"></line>
+                            <line x1="16" y1="8" x2="8" y2="16"></line>
+                          </>
+                        ) : (
+                          <>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="8 12 12 16 16 8"></polyline>
+                          </>
+                        )}
+                      </svg>
+                      <span style={{ fontSize: '0.85rem' }}>Après-midi</span>
+                    </div>
                   </div>
                 )
               },
@@ -470,17 +509,34 @@ const SaisieAbsences: React.FC = () => {
               }
             ]}
             actions={(eleve: EleveWithAbsence) => (
-              <button
-                onClick={() => handleAbsenceToggle(eleve)}
-                disabled={loading || !isJourDeCours || isAnneeVerrouillee}
-                className={`btn-action ${eleve.absence ? 'btn-present' : 'btn-absent'}`}
-                title={
-                  isAnneeVerrouillee ? 'Année verrouillée - modification impossible' :
-                  !isJourDeCours ? 'Jour non scolaire - modification impossible' : ''
-                }
-              >
-                {eleve.absence ? 'Marquer présent' : 'Marquer absent'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => handleAbsenceToggle(eleve, 'matin')}
+                  disabled={loading || !isJourDeCours || isAnneeVerrouillee}
+                  className={`btn-action ${eleve.absenceMatin ? 'btn-present' : 'btn-absent'}`}
+                  title={
+                    isAnneeVerrouillee ? 'Année verrouillée - modification impossible' :
+                    !isJourDeCours ? 'Jour non scolaire - modification impossible' :
+                    eleve.absenceMatin ? 'Marquer présent le matin' : 'Marquer absent le matin'
+                  }
+                  style={{ fontSize: '0.85rem', padding: '6px 12px' }}
+                >
+                  🌅 {eleve.absenceMatin ? 'Présent' : 'Absent'}
+                </button>
+                <button
+                  onClick={() => handleAbsenceToggle(eleve, 'apres-midi')}
+                  disabled={loading || !isJourDeCours || isAnneeVerrouillee}
+                  className={`btn-action ${eleve.absenceApresMidi ? 'btn-present' : 'btn-absent'}`}
+                  title={
+                    isAnneeVerrouillee ? 'Année verrouillée - modification impossible' :
+                    !isJourDeCours ? 'Jour non scolaire - modification impossible' :
+                    eleve.absenceApresMidi ? 'Marquer présent l\'après-midi' : 'Marquer absent l\'après-midi'
+                  }
+                  style={{ fontSize: '0.85rem', padding: '6px 12px' }}
+                >
+                  🌇 {eleve.absenceApresMidi ? 'Présent' : 'Absent'}
+                </button>
+              </div>
             )}
             emptyMessage="Aucun élève ne correspond aux critères de recherche."
             className="table-eleves"
